@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD de Livros</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Cadastro de Livros</h1>
+
+  <form id="form-livro">
+    <input type="hidden" id="livro-id">
+
+    <label>
+      ID:
+      <input type="number" id="id" value="0" required>
+    </label>
+
+    <label>
+      Título:
+      <input type="text" id="titulo" required>
+    </label>
+
+    <label>
+      Autor:
+      <input type="text" id="autor" step="0.01" required>
+    </label>
+
+    <label>
+      Genero:
+      <input type="text" id="genero" step="0.01" required>
+    </label>
+
+    <label>
+      Ano Publicação:
+      <input type="number" id="ano_publicacao" value="0" required>
+    </label>
+
+    <label>
+      ISBN:
+      <input type="text" id="isbn" required>
+    </label>
+
+    <label>
+      Quantidade Disponível:
+      <input type="number" id="quantidade_disponivel" value="0" required>
+    </label>
+
+
+    <div class="botoes">
+      <button type="submit" id="btn-salvar">Salvar</button>
+      <button type="button" id="btn-cancelar" hidden>Cancelar</button>
+    </div>
+  </form>
+
+  <h2>Lista de Livros</h2>
+  <table id="tabela-livros">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titulo</th>
+        <th>Autor</th>
+        <th>Gênero</th>
+        <th>Ano Publicação</th>
+        <th>ISBN</th>
+        <th>Quantidade Disponível</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
