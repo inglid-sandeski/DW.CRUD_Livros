@@ -82,7 +82,7 @@ CREATE TABLE livros (
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/CRUD_Livros.git
+git clone https://github.com/inglid-sandeski/DW.CRUD_Livros.git
 ```
 
 ### 2. Acessar a pasta do backend
@@ -104,8 +104,8 @@ No arquivo `database.js`, configure:
 ```javascript
 host: 'localhost',
 user: 'root',
-password: 'sua_senha',
-database: 'biblioteca'
+password: '',
+database: 'dsw_crud_livros'
 ```
 
 ### 5. Iniciar o servidor
