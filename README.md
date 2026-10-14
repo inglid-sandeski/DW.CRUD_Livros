@@ -13,6 +13,7 @@ O projeto consiste em um sistema CRUD (Create, Read, Update e Delete) para cadas
 * Consulta de livro por ID
 * Edição de livros
 * Exclusão de livros
+* Validação dos dados no servidor, com mensagens de erro exibidas na tela
 * Integração com banco de dados MySQL
 * Comunicação entre frontend e backend utilizando API REST
 
@@ -26,7 +27,7 @@ O projeto consiste em um sistema CRUD (Create, Read, Update e Delete) para cadas
 
 ### Backend
 
-* Node.js
+* Node.js / Bun (o projeto usa o Bun como gerenciador e executor)
 * Express.js
 * CORS
 
@@ -41,13 +42,17 @@ O projeto consiste em um sistema CRUD (Create, Read, Update e Delete) para cadas
 CRUD_Livros/
 │
 ├── backend/
-│   ├── config/
-│   │   └── database.js
-│   ├── controllers/
-│   │   └── livrosController.js
-│   ├── routes/
-│   │   └── livrosRoutes.js
-│   ├── server.js
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── database.js
+│   │   ├── controllers/
+│   │   │   └── livrosController.js
+│   │   ├── routes/
+│   │   │   └── livrosRoutes.js
+│   │   ├── database.sql
+│   │   └── server.js
+│   ├── .env.example
+│   ├── bun.lock
 │   └── package.json
 │
 ├── frontend/
@@ -60,24 +65,32 @@ CRUD_Livros/
 
 ## 🗄️ Banco de Dados
 
-Criação do banco de dados:
+O script `backend/src/database.sql` cria o banco `dsw_crud_livros`, a tabela `livros` e alguns livros de exemplo:
 
 ```sql
-CREATE DATABASE biblioteca;
-USE biblioteca;
+CREATE DATABASE IF NOT EXISTS dsw_crud_livros;
+USE dsw_crud_livros;
 
 CREATE TABLE livros (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
-    autor VARCHAR(255) NOT NULL,
-    genero VARCHAR(100),
-    ano_publicacao INT,
-    isbn VARCHAR(20),
-    quantidade_disponivel INT DEFAULT 0
+    autor VARCHAR(150) NOT NULL,
+    genero VARCHAR(100) NOT NULL,
+    ano_publicacao INT NOT NULL,
+    isbn VARCHAR(20) UNIQUE NOT NULL,
+    quantidade_disponivel INT NOT NULL DEFAULT 0
 );
 ```
 
+Para executar o script (informe a senha do seu MySQL quando for pedida):
+
+```bash
+mysql -u root -p < backend/src/database.sql
+```
+
 ## ⚙️ Instalação
+
+Requisitos: [Bun](https://bun.sh) e MySQL instalados.
 
 ### 1. Clonar o repositório
 
@@ -85,39 +98,39 @@ CREATE TABLE livros (
 git clone https://github.com/inglid-sandeski/DW.CRUD_Livros.git
 ```
 
-### 2. Acessar a pasta do backend
+### 2. Criar o banco de dados
+
+Execute o script SQL da seção anterior.
+
+### 3. Acessar a pasta do backend e instalar as dependências
 
 ```bash
-cd backend
-```
-
-### 3. Instalar as dependências
-
-```bash
-npm install
+cd DW.CRUD_Livros/backend
+bun install
 ```
 
 ### 4. Configurar a conexão com o MySQL
 
-No arquivo `database.js`, configure:
+Copie o arquivo de exemplo e preencha com os seus dados:
 
-```javascript
-host: 'localhost',
-user: 'root',
-password: '',
-database: 'dsw_crud_livros'
+```bash
+cp .env.example .env
 ```
+
+```text
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=sua_senha_aqui
+DB_NAME=dsw_crud_livros
+```
+
+O arquivo `.env` não é enviado ao GitHub (está no `.gitignore`). Nunca coloque senhas diretamente no código.
 
 ### 5. Iniciar o servidor
 
 ```bash
-npm start
-```
-
-ou
-
-```bash
-node server.js
+bun start
 ```
 
 Servidor disponível em:
@@ -125,6 +138,12 @@ Servidor disponível em:
 ```text
 http://localhost:3000
 ```
+
+> Quer usar Node.js em vez do Bun (Node 20.6 ou mais novo)? Rode `npm install` e depois `node --env-file=.env src/server.js`.
+
+### 6. Abrir o frontend
+
+Abra o arquivo `frontend/index.html` no navegador. Ele conversa com a API em `http://localhost:3000`, então o servidor precisa estar rodando.
 
 ## 🔗 Rotas da API
 
@@ -157,6 +176,17 @@ PUT /livros/:id
 ```http
 DELETE /livros/:id
 ```
+
+### Campos e respostas de erro
+
+Corpo (JSON) de `POST` e `PUT`: `titulo`, `autor`, `genero`, `isbn` (textos obrigatórios), `ano_publicacao` (inteiro) e `quantidade_disponivel` (inteiro maior ou igual a 0; no `POST` o padrão é 0).
+
+* `400`: dados inválidos ou faltando
+* `404`: livro não encontrado
+* `409`: já existe um livro com o mesmo ISBN
+* `500`: erro interno do servidor
+
+As respostas de erro têm o formato `{ "erro": "mensagem" }`.
 
 ## 📸 Interface
 

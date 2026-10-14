@@ -10,6 +10,31 @@ const inputIsbn = document.getElementById('isbn');
 const inputQuantidadeDisponivel = document.getElementById('quantidade_disponivel');
 const btnCancelar = document.getElementById('btn-cancelar');
 const tbody = document.querySelector('#tabela-livros tbody');
+const mensagem = document.getElementById('mensagem');
+
+function mostrarMensagem(texto) {
+  mensagem.textContent = texto;
+  mensagem.hidden = false;
+}
+
+function limparMensagem() {
+  mensagem.textContent = '';
+  mensagem.hidden = true;
+}
+
+// Lê a mensagem de erro enviada pela API; se não houver, usa um texto padrão.
+async function lerErro(resposta) {
+  try {
+    const corpo = await resposta.json();
+    if (corpo && corpo.erro) return corpo.erro;
+  } catch {
+    // resposta sem JSON: usa a mensagem padrão abaixo
+  }
+  return `Erro ao falar com o servidor (código ${resposta.status})`;
+}
+
+const MENSAGEM_SERVIDOR_FORA =
+  'Não foi possível conectar ao servidor. Verifique se o backend está rodando.';
 
 function criarCelula(texto) {
   const td = document.createElement('td');
@@ -26,38 +51,49 @@ function criarBotao(rotulo, classe, id) {
 }
 
 async function listarLivros() {
-  const resposta = await fetch(API);
-  const livros = await resposta.json();
+  try {
+    const resposta = await fetch(API);
 
-  tbody.replaceChildren();
+    if (!resposta.ok) {
+      mostrarMensagem(await lerErro(resposta));
+      return;
+    }
 
-  livros.forEach((p) => {
-    const tr = document.createElement('tr');
+    const livros = await resposta.json();
 
-    tr.append(
-      criarCelula(p.id),
-      criarCelula(p.titulo),
-      criarCelula(p.autor),
-      criarCelula(p.genero),
-      criarCelula(p.ano_publicacao),
-      criarCelula(p.isbn),
-      criarCelula(p.quantidade_disponivel)
-    );
+    tbody.replaceChildren();
 
-    const tdAcoes = document.createElement('td');
+    livros.forEach((p) => {
+      const tr = document.createElement('tr');
 
-    tdAcoes.append(
-      criarBotao('Editar', 'btn-editar', p.id),
-      criarBotao('Excluir', 'btn-excluir', p.id)
-    );
+      tr.append(
+        criarCelula(p.id),
+        criarCelula(p.titulo),
+        criarCelula(p.autor),
+        criarCelula(p.genero),
+        criarCelula(p.ano_publicacao),
+        criarCelula(p.isbn),
+        criarCelula(p.quantidade_disponivel)
+      );
 
-    tr.append(tdAcoes);
-    tbody.append(tr);
-  });
+      const tdAcoes = document.createElement('td');
+
+      tdAcoes.append(
+        criarBotao('Editar', 'btn-editar', p.id),
+        criarBotao('Excluir', 'btn-excluir', p.id)
+      );
+
+      tr.append(tdAcoes);
+      tbody.append(tr);
+    });
+  } catch {
+    mostrarMensagem(MENSAGEM_SERVIDOR_FORA);
+  }
 }
 
 async function salvarLivro(evento) {
   evento.preventDefault();
+  limparMensagem();
 
   const dados = {
     titulo: inputTitulo.value,
@@ -69,19 +105,24 @@ async function salvarLivro(evento) {
   };
 
   const id = inputId.value;
+  const url = id ? `${API}/${id}` : API;
+  const metodo = id ? 'PUT' : 'POST';
 
-  if (id) {
-    await fetch(`${API}/${id}`, {
-      method: 'PUT',
+  try {
+    const resposta = await fetch(url, {
+      method: metodo,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dados),
     });
-  } else {
-    await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dados),
-    });
+
+    if (!resposta.ok) {
+      // Mantém o que a pessoa digitou para ela poder corrigir e tentar de novo
+      mostrarMensagem(await lerErro(resposta));
+      return;
+    }
+  } catch {
+    mostrarMensagem(MENSAGEM_SERVIDOR_FORA);
+    return;
   }
 
   resetarFormulario();
@@ -89,24 +130,49 @@ async function salvarLivro(evento) {
 }
 
 async function editarLivro(id) {
-  const resposta = await fetch(`${API}/${id}`);
-  const livro = await resposta.json();
+  limparMensagem();
 
-  inputId.value = livro.id;
-  inputTitulo.value = livro.titulo;
-  inputAutor.value = livro.autor;
-  inputGenero.value = livro.genero;
-  inputAnoPublicacao.value = livro.ano_publicacao;
-  inputIsbn.value = livro.isbn;
-  inputQuantidadeDisponivel.value = livro.quantidade_disponivel;
+  try {
+    const resposta = await fetch(`${API}/${id}`);
 
-  btnCancelar.hidden = false;
+    if (!resposta.ok) {
+      mostrarMensagem(await lerErro(resposta));
+      return;
+    }
+
+    const livro = await resposta.json();
+
+    inputId.value = livro.id;
+    inputTitulo.value = livro.titulo;
+    inputAutor.value = livro.autor;
+    inputGenero.value = livro.genero;
+    inputAnoPublicacao.value = livro.ano_publicacao;
+    inputIsbn.value = livro.isbn;
+    inputQuantidadeDisponivel.value = livro.quantidade_disponivel;
+
+    btnCancelar.hidden = false;
+  } catch {
+    mostrarMensagem(MENSAGEM_SERVIDOR_FORA);
+  }
 }
 
 async function excluirLivro(id) {
   if (!confirm('Deseja excluir este livro?')) return;
 
-  await fetch(`${API}/${id}`, { method: 'DELETE' });
+  limparMensagem();
+
+  try {
+    const resposta = await fetch(`${API}/${id}`, { method: 'DELETE' });
+
+    if (!resposta.ok) {
+      mostrarMensagem(await lerErro(resposta));
+      return;
+    }
+  } catch {
+    mostrarMensagem(MENSAGEM_SERVIDOR_FORA);
+    return;
+  }
+
   listarLivros();
 }
 
@@ -124,8 +190,13 @@ function resetarFormulario() {
   btnCancelar.hidden = true;
 }
 
+function cancelarEdicao() {
+  limparMensagem();
+  resetarFormulario();
+}
+
 form.addEventListener('submit', salvarLivro);
-btnCancelar.addEventListener('click', resetarFormulario);
+btnCancelar.addEventListener('click', cancelarEdicao);
 
 tbody.addEventListener('click', (evento) => {
   const id = evento.target.dataset.id;

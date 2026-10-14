@@ -12,23 +12,18 @@
     <input type="hidden" id="livro-id">
 
     <label>
-      ID:
-      <input type="number" id="id" value="0" required>
-    </label>
-
-    <label>
       Título:
       <input type="text" id="titulo" required>
     </label>
 
     <label>
       Autor:
-      <input type="text" id="autor" step="0.01" required>
+      <input type="text" id="autor" required>
     </label>
 
     <label>
-      Genero:
-      <input type="text" id="genero" step="0.01" required>
+      Gênero:
+      <input type="text" id="genero" required>
     </label>
 
     <label>
@@ -52,6 +47,8 @@
       <button type="button" id="btn-cancelar" hidden>Cancelar</button>
     </div>
   </form>
+
+  <p id="mensagem" role="alert" hidden></p>
 
   <h2>Lista de Livros</h2>
   <table id="tabela-livros">
