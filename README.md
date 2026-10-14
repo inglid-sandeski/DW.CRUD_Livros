@@ -141,9 +141,33 @@ http://localhost:3000
 
 > Quer usar Node.js em vez do Bun (Node 20.6 ou mais novo)? Rode `npm install` e depois `node --env-file=.env src/server.js`.
 
-### 6. Abrir o frontend
+### 6. Abrir a aplicação
 
-Abra o arquivo `frontend/index.html` no navegador. Ele conversa com a API em `http://localhost:3000`, então o servidor precisa estar rodando.
+Com o servidor rodando, acesse `http://localhost:3000` no navegador: o backend também serve a pasta `frontend/`, então a tela e a API ficam no mesmo endereço.
+
+(Abrir o arquivo `frontend/index.html` direto do disco também funciona, desde que o servidor esteja rodando na porta 3000.)
+
+## ☁️ Publicação online (exemplo: Railway)
+
+Como o backend serve o frontend, basta publicar um único serviço mais um banco MySQL.
+
+1. Crie uma conta em [railway.com](https://railway.com) e um novo projeto a partir do repositório do GitHub. Defina a pasta raiz do serviço como `backend`.
+2. No mesmo projeto, adicione um banco **MySQL** (botão **+ New**).
+3. No serviço do backend, crie as variáveis de ambiente apontando para o banco (use o nome que o serviço MySQL tem no seu projeto):
+
+   ```text
+   DB_HOST=${{MySQL.MYSQLHOST}}
+   DB_PORT=${{MySQL.MYSQLPORT}}
+   DB_USER=${{MySQL.MYSQLUSER}}
+   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+   DB_NAME=${{MySQL.MYSQLDATABASE}}
+   ```
+
+   A porta (`PORT`) é definida pela própria plataforma.
+4. Crie a tabela no banco da nuvem: execute o conteúdo de `backend/src/database.sql` **a partir de `CREATE TABLE`**, sem as duas primeiras linhas (`CREATE DATABASE` e `USE`), no banco que a plataforma criou. Para conectar de fora, ative o acesso público do serviço MySQL (**Settings → Networking**) e use a string `MYSQL_PUBLIC_URL`.
+5. Gere um domínio público para o serviço do backend (**Settings → Networking**) e abra o endereço no navegador.
+
+Atenção: os planos gratuitos de hospedagem têm limites e podem mudar; confira os preços na documentação da plataforma antes de começar.
 
 ## 🔗 Rotas da API
 

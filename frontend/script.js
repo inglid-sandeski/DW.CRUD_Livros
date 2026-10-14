@@ -1,4 +1,6 @@
-const API = 'http://localhost:3000/livros';
+// Servido pelo backend (local ou online): usa o mesmo endereço da página.
+// Aberto direto do disco (file://): usa o backend local na porta 3000.
+const API = location.protocol === 'file:' ? 'http://localhost:3000/livros' : '/livros';
 
 const form = document.getElementById('form-livro');
 const inputId = document.getElementById('livro-id');
